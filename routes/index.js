@@ -13,10 +13,12 @@ router.get('/', function(req, res) {
     });
 });
 
-router.get('/email', function(req, res) {
-    var url=req.query.url;
+router.get('/facebook', function(req, res) {
+    var url = req.query.url;
     console.log(url);
-    if (!url) {url = 'https://www.facebook.com/lamignonne.sweetshop/photos/a.745574142195059.1073742077.237010953051383/745574262195047/?type=3&theater';}
+    if (!url) {
+        url = 'https://www.facebook.com/lamignonne.sweetshop/photos/a.745574142195059.1073742077.237010953051383/745574262195047/?type=3&theater';
+    }
     var uri = {
         'uri': url,
         'headers': {
@@ -27,7 +29,7 @@ router.get('/email', function(req, res) {
 
     request(uri, function(error, response, html) {
         if (!error && response.statusCode == 200) {
-            
+
 
             //console.log(html);
             var $ = cheerio.load(html);
@@ -39,14 +41,14 @@ router.get('/email', function(req, res) {
                 for (var key in tmp) {
                     var splited = tmp[key].split(",");
                     for (var keys in splited) {
-                     
+
                         if (filterEmail(splited[keys])) {
                             //console.log("founded");
-                            var str=splited[keys];
+                            var str = splited[keys];
                             //console.log(splited[keys]);
-                            str=str.replace("\\u0040","@");
-                            str=str.replace(/["']/g, "");
-                            str=str.replace(":","");
+                            str = str.replace("\\u0040", "@");
+                            str = str.replace(/["']/g, "");
+                            str = str.replace(":", "");
                             //console.log(str);
                             json.push(str);
                         }
@@ -62,15 +64,70 @@ router.get('/email', function(req, res) {
             fs.writeFile('output.txt', json, function(err) {
 
                 //console.log('File successfully written! - Check your project directory for the output.json file');
-               
+
             });
-        console.log(json);
-        res.send(json);    
+            console.log(json);
+            res.send(json);
 
         }
     });
 
 });
+
+router.get('/pantown', function(req, res) {
+    var url = req.query.url;
+    console.log(url);
+    if (!url) {
+        url = 'http://www.pantown.com/group.php?display=board&id=25255&name=board1&area=4';
+    }
+    var uri = {
+        'uri': url,
+        'headers': {
+            'User-Agent': agents.randomAgentString()
+        }
+    }
+    var json = [];
+
+    request(uri, function(error, response, html) {
+        if (!error && response.statusCode == 200) {
+
+
+            //console.log(html);
+            var $ = cheerio.load(html);
+            //json.push(html);
+
+            $('p').each(function(i) {
+                var tmp = $(this).text().split(" ");
+                for (var key in tmp) {
+                    if (filterEmail(tmp[key])) {
+                        console.log(tmp[key]);
+                        var str = tmp[key];
+                        //console.log(splited[keys]);
+                        str = str.replace("\\u0040", "@");
+                        str = str.replace(/["']/g, "");
+                        str = str.replace(":", "");
+                        str = str.replace('\t','');
+                        json.push(str);
+                    }
+                }
+                //console.log("founded");
+                //console.log($(this).text());
+                //json.push($(this).text());
+            });
+
+            fs.writeFile('output.txt', json, function(err) {
+
+                //console.log('File successfully written! - Check your project directory for the output.json file');
+
+            });
+            console.log(json);
+            res.send(json);
+
+        }
+    });
+
+});
+
 function filterEmail(element) {
     var email = 'mail.com';
     if (!element) return false;
