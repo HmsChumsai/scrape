@@ -16,7 +16,7 @@ router.get('/', function(req, res) {
 router.get('/email', function(req, res) {
     var url=req.query.url;
     console.log(url);
-    if (!url) url = 'https://www.facebook.com/lamignonne.sweetshop/photos/a.745574142195059.1073742077.237010953051383/745574262195047/?type=3&theater';
+    if (!url) {url = 'https://www.facebook.com/lamignonne.sweetshop/photos/a.745574142195059.1073742077.237010953051383/745574262195047/?type=3&theater';}
     var uri = {
         'uri': url,
         'headers': {
