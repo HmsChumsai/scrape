@@ -76,7 +76,7 @@ router.get('/facebook', function(req, res) {
 
 router.get('/pantown', function(req, res) {
     var url = req.query.url;
-    console.log(url);
+    //console.log(url);
     if (!url) {
         url = 'http://www.pantown.com/group.php?display=board&id=25255&name=board1&area=4';
     }
@@ -86,45 +86,9 @@ router.get('/pantown', function(req, res) {
             'User-Agent': agents.randomAgentString()
         }
     }
-    var json = [];
-
-    request(uri, function(error, response, html) {
-        if (!error && response.statusCode == 200) {
-
-
-            //console.log(html);
-            var $ = cheerio.load(html);
-            //json.push(html);
-
-            $('p').each(function(i) {
-                var tmp = $(this).text().split(" ");
-                for (var key in tmp) {
-                    if (filterEmail(tmp[key])) {
-                        console.log(tmp[key]);
-                        var str = tmp[key];
-                        //console.log(splited[keys]);
-                        str = str.replace("\\u0040", "@");
-                        str = str.replace(/["']/g, "");
-                        str = str.replace(":", "");
-                        str = str.replace('\t','');
-                        json.push(str);
-                    }
-                }
-                //console.log("founded");
-                //console.log($(this).text());
-                //json.push($(this).text());
-            });
-
-            fs.writeFile('output.txt', json, function(err) {
-
-                //console.log('File successfully written! - Check your project directory for the output.json file');
-
-            });
-            console.log(json);
-            res.send(json);
-
-        }
-    });
+    //var json = [];
+    crawling(uri,res);
+    
 
 });
 
@@ -133,6 +97,49 @@ function filterEmail(element) {
     if (!element) return false;
     //if (element.indexOf(email) > -1) {json.push(element);}
     return element.indexOf(email) > -1
+};
+
+function crawling(uri,res){
+    console.log("test")
+    var output=[];
+    request(uri, function(error, response, html) {
+        if (!error && response.statusCode == 200) {
+            var $ = cheerio.load(html);
+            $('p').each(function(i) {
+                var tmp = $(this).text().split(" ");
+                for (var key in tmp) {
+                    if (filterEmail(tmp[key])) {
+                        //console.log(tmp[key]);
+                        var str = tmp[key];
+                        //console.log(splited[keys]);
+                        str = str.replace("\\u0040", "@");
+                        //str = str.replace(/["']/g, "");
+                        str = str.replace(":", "");
+                        //str=str.replace(/[^\w\s]/gi, '');
+                        //str = str.replace('\t','');
+                        str=str.replace(/^\s+|\s+$/gm,'')
+                        console.log(str);
+                        output.push(str);
+                    }
+                }
+
+            });
+            /*
+            fs.writeFile('output.txt', output, function(err) {
+
+                //console.log('File successfully written! - Check your project directory for the output.json file');
+
+            });
+            */
+            //output=output.replace(/[^\w\s]/gi, '');
+            //console.log(output);
+            //json=output;
+            res.send(output);
+ 
+        }
+    });
+    
+    
 };
 
 module.exports = router;
