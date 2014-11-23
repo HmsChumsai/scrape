@@ -81,16 +81,35 @@ router.get('/pantown', function(req, res) {
         url = 'http://www.pantown.com/group.php?display=board&id=25255&name=board1&area=4';
     }
     var uri = {
-        'uri': url,
-        'headers': {
-            'User-Agent': agents.randomAgentString()
+            'uri': url,
+            'headers': {
+                'User-Agent': agents.randomAgentString()
+            }
         }
-    }
-    //var json = [];
-    crawling(uri,res);
-    
-
+        //get all topics link
+    var links = [];
+    links = getLinks(uri, res);
+    //crawling(uri);
+    res.send("done");
 });
+
+function getLinks(uri, res) {
+    request(uri, function(error, response, html) {
+        //console.log(html);
+        var links = [];
+        if (!error && response.statusCode == 200) {
+            var $ = cheerio.load(html);
+
+            var URLs = []
+            $('td a').map(function(i, link) {
+                var href = $(link).attr('href');
+                console.log(href);
+                URLs.push(href);
+            }) 
+
+        }
+    });
+}
 
 function filterEmail(element) {
     var email = 'mail.com';
@@ -99,9 +118,9 @@ function filterEmail(element) {
     return element.indexOf(email) > -1
 };
 
-function crawling(uri,res){
+function crawling(uri, res) {
     console.log("test")
-    var output=[];
+    var output = [];
     request(uri, function(error, response, html) {
         if (!error && response.statusCode == 200) {
             var $ = cheerio.load(html);
@@ -117,29 +136,19 @@ function crawling(uri,res){
                         str = str.replace(":", "");
                         //str=str.replace(/[^\w\s]/gi, '');
                         //str = str.replace('\t','');
-                        str=str.replace(/^\s+|\s+$/gm,'')
-                        console.log(str);
+                        str = str.replace(/^\s+|\s+$/gm, '')
+                            // console.log(str);
                         output.push(str);
                     }
                 }
 
             });
-            /*
-            fs.writeFile('output.txt', output, function(err) {
+            //res.send(output);
 
-                //console.log('File successfully written! - Check your project directory for the output.json file');
-
-            });
-            */
-            //output=output.replace(/[^\w\s]/gi, '');
-            //console.log(output);
-            //json=output;
-            res.send(output);
- 
         }
     });
-    
-    
+
+
 };
 
 module.exports = router;
