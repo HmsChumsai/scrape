@@ -1,71 +1,85 @@
 var express = require('express');
-var path = require('path');
-//var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-// Database
-var mongo = require('mongoskin');
-var db = mongo.db("mongodb://localhost:27017/nodetest2", {native_parser:true});
-
-var routes = require('./routes/index');
-var users = require('./routes/users');
-
+var fs = require('fs');
+var request = require('request');
+var cheerio = require('cheerio');
 var app = express();
+var Crawler = require("crawler");
 
-// view engine setup
-//app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-app.engine('html', require('ejs').renderFile);
+var urls=[];
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+function getUrl(url) {
+    url = 'http://www.fashiontrendsin.com/product-category/jackets/';
+    request(url, function(error, response, html) {
+        // First we'll check to make sure no errors occurred when making the request
+        if (!error) {
+            // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
+            var $ = cheerio.load(html);
 
-// Make our db accessible to our router
-app.use(function(req,res,next){
-    req.db = db;
-    next();
-});
+            $('div.product-loop div.product-image-wrapper a').each(function() { //root div for all product in page
+                //console.log('founded');
+                var product = $(this);
+                var link = product.attr('href');
+                urls.push(link);
+               
 
-app.use('/', routes);
-app.use('/users', users);
+            })
 
-/// catch 404 and forwarding to error handler
-app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
-});
+             console.log(urls);
+        }
 
-/// error handlers
+    })
+};
 
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
-    });
+
+
+app.get('/scrape', function(req, res) {
+    url = 'http://www.fashiontrendsin.com/product-category/jackets/';
+    request(url, function(error, response, html) {
+        // First we'll check to make sure no errors occurred when making the request
+        if (!error) {
+            // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
+            var out = "";
+            var title, release, rating;
+            var links = [];
+            var $ = cheerio.load(html);
+
+            $('div.product-loop div.product-image-wrapper a').each(function() { //root div for all product in page
+                //console.log('founded');
+                var product = $(this);
+                var link = product.attr('href');
+                links.push(link);
+                console.log(link);
+
+            })
+
+            fs.writeFile('output.html', out, function(err) {
+
+                console.log('File successfully written! - Check your project directory for the output.json file');
+
+            });
+
+            res.send('Done');
+            scrape(links);
+        }
+
+    })
+})
+
+
+
+
+function scrape(links,function(){
+
 }
-
-// production error handler
-// no stacktraces leaked to user
-app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    /*res.render('error', {
-        message: err.message,
-        error: {}
-    });
-    */
-});
+    
 
 
-module.exports = app;
+    for (var link in links) {
+        request(link, function(error, response, html) {
+
+        });
+    }
+
+}
+console.log('Magic happens on port' + process.env.PORT);
+exports = module.exports = app;

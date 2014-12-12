@@ -101,11 +101,12 @@ function getLinks(uri, res) {
             var $ = cheerio.load(html);
 
             var URLs = []
-            $('td a').map(function(i, link) {
+            $('td div[id=p_content] a').map(function(i, link) {
                 var href = $(link).attr('href');
                 console.log(href);
-                URLs.push(href);
-            }) 
+                console.log(i);
+                URLs.push("http://www.pantown.com/"+href);
+            })
 
         }
     });

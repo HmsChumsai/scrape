@@ -21,6 +21,8 @@
         "fs": "*",
         "agents": "*",
         "async": "*",
-        "casper":"*"
+        "casper":"*",
+        "crawler":"*",
+        "mongoose":"*"
     }
 }
